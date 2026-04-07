@@ -112,7 +112,7 @@ def get_args():
         "Note that the quotation marks are necessary and that no white space "
         "is allowed.",
     )
-    parser.add_argument("--logging-dir", type=str, default="./results")
+    parser.add_argument("--logging-dir", type=str, default="./results/SIMPLER_EVAL")
     parser.add_argument("--tf-memory-limit", type=int, default=3072, help="Tensorflow memory limit")
     parser.add_argument("--octo-init-rng", type=int, default=0, help="Octo init rng seed")
     parser.add_argument("--async-freq", type=int, default=1)

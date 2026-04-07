@@ -21,6 +21,26 @@ from examples.LIBERO.eval_files.model2libero_interface import ModelClient
 
 LIBERO_DUMMY_ACTION = [0.0] * 6 + [-1.0]
 LIBERO_ENV_RESOLUTION = 256  # resolution used to render training data
+
+
+def _env_flag(name: str, default: bool = False) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _env_int(name: str, default: int) -> int:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    try:
+        return int(value)
+    except ValueError:
+        logging.warning("Invalid integer for %s=%r, falling back to %d", name, value, default)
+        return default
+
+
 def _binarize_gripper_open(open_val: np.ndarray | float) -> np.ndarray:
     arr = np.asarray(open_val, dtype=np.float32).reshape(-1)
     v = float(arr[0])
@@ -288,12 +308,13 @@ def start_debugpy_once():
     import debugpy
     if getattr(start_debugpy_once, "_started", False):
         return
-    debugpy.listen(("0.0.0.0", 10092))
-    print("🔍 Waiting for VSCode attach on 0.0.0.0:10092 ...")
+    debug_port = _env_int("LIBERO_EVAL_DEBUG_PORT", 10092)
+    debugpy.listen(("0.0.0.0", debug_port))
+    print(f"🔍 Waiting for VSCode attach on 0.0.0.0:{debug_port} ...")
     debugpy.wait_for_client()
     start_debugpy_once._started = True
 
 if __name__ == "__main__":
-    if os.getenv("DEBUG", False):
+    if _env_flag("DEBUG"):
         start_debugpy_once()
     tyro.cli(eval_libero)

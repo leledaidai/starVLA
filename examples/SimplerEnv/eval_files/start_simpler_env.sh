@@ -2,19 +2,23 @@
 
 echo `which python`
 
-export sim_python=/mnt/petrelfs/share/yejinhui/Envs/miniconda3/envs/dinoact/bin/python
-export SimplerEnv_PATH=/mnt/petrelfs/share/yejinhui/Projects/SimplerEnv
+export VK_ICD_FILENAMES=/inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/local_nvidia_icd.json
+export CUDA_VISIBLE_DEVICES=0 export SAPIEN_NO_GUI=1
+export DISPLAY=
+
+export sim_python=/root/miniconda3/envs/simpler_env/bin/python
+export SimplerEnv_PATH=/inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/benchmark_env/SimplerEnv
 export PYTHONPATH=$(pwd):${PYTHONPATH}
 #### set environment variables #####
 
 #### get parameters #####
 if [ -n "$1" ]; then
-  MODEL_PATH="$1" # model path indict the output tree
+  MODEL_PATH="$1"
 else
-  MODEL_PATH=./results/Checkpoints/1208_bridge_rt_1_Qwen3PI/final_model/pytorch_model.pt
+  MODEL_PATH=./playground/Pretrained_models/Qwen3VL-GR00T-Bridge-RT-1/checkpoints/steps_20000_pytorch_model.pt
 fi
 
-port=${2:-6678} # connect to your policy server port
+port=${2:-6678}
 
 
 #### build output directory #####
@@ -22,6 +26,12 @@ ckpt_path=${MODEL_PATH}
 ckpt_dir=$(dirname "${ckpt_path}")
 ckpt_base=$(basename "${ckpt_path}")
 ckpt_name="${ckpt_base%.*}"
+
+# Generate result name: model_name_checkpoints_ckpt_file
+MODEL_DIR=$(dirname "${ckpt_path}")
+MODEL_NAME=$(basename "${MODEL_DIR}")
+PARENT_DIR=$(basename $(dirname "${MODEL_DIR}"))
+RESULT_NAME="${PARENT_DIR}_${MODEL_NAME}_${ckpt_base}"
 
 # Create output directories
 output_server_dir="${ckpt_dir}/output_server"
@@ -47,9 +57,9 @@ robot_init_x=0.147
 robot_init_y=0.028
 
 declare -a ENV_NAMES=(
-  # StackGreenCubeOnYellowCubeBakedTexInScene-v0
-  # PutCarrotOnPlateInScene-v0
-  # PutSpoonOnTableClothInScene-v0
+  StackGreenCubeOnYellowCubeBakedTexInScene-v0
+  PutCarrotOnPlateInScene-v0
+  PutSpoonOnTableClothInScene-v0
 )
 
 for i in "${!ENV_NAMES[@]}"; do
@@ -76,6 +86,7 @@ for i in "${!ENV_NAMES[@]}"; do
       --obj-episode-range 0 24 \
       --robot-init-rot-quat-center 0 0 0 1 \
       --robot-init-rot-rpy-range 0 0 1 0 0 1 0 0 1 \
+      --logging-dir ./results/SIMPLER_EVAL/${RESULT_NAME} \
       > "${task_log}" 2>&1 &
 
     sleep 6
@@ -117,6 +128,7 @@ for i in "${!ENV_NAMES_V2[@]}"; do
       --obj-episode-range 0 24 \
       --robot-init-rot-quat-center 0 0 0 1 \
       --robot-init-rot-rpy-range 0 0 1 0 0 1 0 0 1 \
+      --logging-dir ./results/SIMPLER_EVAL/${RESULT_NAME} \
       > "${task_log}" 2>&1 &
 
     sleep 6

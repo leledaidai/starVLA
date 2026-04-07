@@ -1,0 +1,16 @@
+bash /inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/examples/SimplerEnv/eval_files/simpler_eval.sh /inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/playground/Pretrained_models/Qwen-FAST-Bridge-RT-1/checkpoints/steps_10000_pytorch_model.pt 7010 0
+
+bash /inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/examples/SimplerEnv/eval_files/simpler_eval.sh /inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/playground/Pretrained_models/Qwen-GR00T-Bridge/checkpoints/steps_45000_pytorch_model.pt 7020 1
+
+bash /inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/examples/SimplerEnv/eval_files/simpler_eval.sh /inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/playground/Pretrained_models/Qwen-GR00T-Bridge-RT-1/checkpoints/steps_30000_pytorch_model.pt 7030 2
+
+bash /inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/examples/SimplerEnv/eval_files/simpler_eval.sh /inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/playground/Pretrained_models/Qwen-PI-Bridge-RT-1/checkpoints/steps_30000_pytorch_model.pt 7040 3
+
+bash /inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/examples/SimplerEnv/eval_files/simpler_eval.sh /inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/playground/Pretrained_models/Qwen3VL-GR00T-Bridge-RT-1/checkpoints/steps_20000_pytorch_model.pt 7050 4
+
+bash /inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/examples/SimplerEnv/eval_files/simpler_eval.sh /inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/playground/Pretrained_models/Qwen3VL-OFT-Bridge-RT-1/checkpoints/steps_5000_pytorch_model.pt 7060 5
+
+
+
+
+bash /inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/examples/SimplerEnv/eval_files/simpler_eval.sh /inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/playground/Pretrained_models/Qwen-OFT-Bridge-RT-1/checkpoints/steps_10000_pytorch_model.pt 7770 0

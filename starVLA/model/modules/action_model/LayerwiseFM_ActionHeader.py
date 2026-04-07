@@ -221,6 +221,7 @@ class LayerwiseFlowmatchingActionHead(nn.Module):
         super().__init__()
         action_config = global_config.framework.action_model
         diffusion_model_cfg = action_config.diffusion_model_cfg
+        action_hidden_dim = action_config.get("action_hidden_dim", action_config.hidden_size)
 
         # 更新 DiTConfig 到 diffusion_model_cfg
         DiTConfig["num_layers"] = global_config.framework.qwenvl.num_vl_layers
@@ -238,6 +239,7 @@ class LayerwiseFlowmatchingActionHead(nn.Module):
 
         self.state_encoder = MLP(
             input_dim=action_config.state_dim,
+            hidden_dim=action_hidden_dim,
             output_dim=self.input_embedding_dim,
         ) if action_config.state_dim else None
 
@@ -247,7 +249,7 @@ class LayerwiseFlowmatchingActionHead(nn.Module):
         )
         self.action_decoder = MLP(
             input_dim=self.input_embedding_dim,
-            hidden_dim=1024,
+            hidden_dim=action_hidden_dim,
             output_dim=self.action_dim,
         )
         self.future_tokens = nn.Embedding(action_config.num_target_vision_tokens, self.input_embedding_dim)

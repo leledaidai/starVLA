@@ -65,10 +65,14 @@ class Qwen_PI(baseframework):
         self.config = config
         self.qwen_vl_interface = get_vlm_model(config=self.config)
 
-        # dynamic get llm config
-        num_vl_layers, llm_hidden_size = 36, self.qwen_vl_interface.model.config.hidden_size
+        # Respect checkpoint config first so older QwenPI checkpoints remain loadable.
+        llm_hidden_size = self.qwen_vl_interface.model.config.hidden_size
+        configured_num_vl_layers = self.config.framework.action_model.diffusion_model_cfg.get("num_layers", None)
+        if configured_num_vl_layers is None:
+            configured_num_vl_layers = getattr(self.config.framework.qwenvl, "num_vl_layers", 36)
+
         self.config.framework.qwenvl.vl_hidden_dim = llm_hidden_size
-        self.config.framework.qwenvl.num_vl_layers = num_vl_layers
+        self.config.framework.qwenvl.num_vl_layers = configured_num_vl_layers
 
         self.action_model: LayerwiseFlowmatchingActionHead = get_action_model(config=self.config)
 

@@ -1,14 +1,19 @@
 
 
-cd /mnt/petrelfs/yejinhui/Projects/starVLA
+cd /inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/
 export PYTHONPATH=$(pwd):${PYTHONPATH}
 
-port=6678
-gpu_id=2
-# export DEBUG=true
-export star_vla_python=/mnt/petrelfs/share/yejinhui/Envs/miniconda3/envs/starVLA/bin/python
+#### get parameters #####
+if [ -n "$1" ]; then
+  your_ckpt="$1"
+else
+  your_ckpt=/inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/playground/Pretrained_models/Qwen3VL-GR00T-Bridge-RT-1/checkpoints/steps_20000_pytorch_model.pt
+fi
 
-your_ckpt=./results/Checkpoints/1208_bridge_rt_1_Qwen3PI/final_model/pytorch_model.pt
+port=${2:-6678}
+gpu_id=${3:-0}
+# export DEBUG=true
+export star_vla_python=/root/miniconda3/envs/starVLA/bin/python
 
 #### build output directory #####
 ckpt_dir=$(dirname "${your_ckpt}")

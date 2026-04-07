@@ -10,6 +10,24 @@ from starVLA.model.framework.base_framework import baseframework
 import torch, os
 
 
+def _env_flag(name: str, default: bool = False) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _env_int(name: str, default: int) -> int:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    try:
+        return int(value)
+    except ValueError:
+        logging.warning("Invalid integer for %s=%r, falling back to %d", name, value, default)
+        return default
+
+
 def main(args) -> None:
     # Example usage:
     # policy = YourPolicyClass()  # Replace with your actual policy class
@@ -54,8 +72,9 @@ def start_debugpy_once():
     import debugpy
     if getattr(start_debugpy_once, "_started", False):
         return
-    debugpy.listen(("0.0.0.0", 10095))
-    print("🔍 Waiting for VSCode attach on 0.0.0.0:10095 ...")
+    debug_port = _env_int("POLICY_SERVER_DEBUG_PORT", 10095)
+    debugpy.listen(("0.0.0.0", debug_port))
+    print(f"🔍 Waiting for VSCode attach on 0.0.0.0:{debug_port} ...")
     debugpy.wait_for_client()
     start_debugpy_once._started = True
 
@@ -64,7 +83,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, force=True)
     parser = build_argparser()
     args = parser.parse_args()
-    if os.getenv("DEBUG", False):
+    if _env_flag("DEBUG"):
         print("🔍 DEBUGPY is enabled")
         start_debugpy_once()
     main(args)

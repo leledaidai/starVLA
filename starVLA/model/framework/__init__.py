@@ -44,6 +44,11 @@ def build_framework(cfg):
 
     if not hasattr(cfg.framework, "name"): 
         cfg.framework.name = cfg.framework.framework_py  # Backward compatibility for legacy config yaml
+
+    legacy_framework_aliases = {
+        "QwenFM": "QwenGR00T",
+    }
+    cfg.framework.name = legacy_framework_aliases.get(cfg.framework.name, cfg.framework.name)
         
     if cfg.framework.name == "QwenOFT":
         from starVLA.model.framework.QwenOFT import Qwenvl_OFT

@@ -30,7 +30,7 @@ You can refer to this link to fix: [Installation Guide – Vulkan Section](https
 We provide a minimal environment verification script:
 
 ```bash
-python examples/SimplerEnv/test_your_simplerEnv.py
+python examples/SimplerEnv/eval_files/test_your_simplerEnv.py
 ```
 
 If you see the "✅ Env built successfully" message, it means SimplerEnv is installed correctly and ready to use.
@@ -73,7 +73,7 @@ In the second terminal, activate the `simpler_env` conda environment and run:
 
 ```bash
 export MODEL_PATH=.../checkpoints/steps_50000_pytorch_model.pt # for read normonization json and get name to save video under ckpt dir
-bash examples/SimplerEnv/start_simpler_env.sh ${MODEL_PATH} 
+bash examples/SimplerEnv/eval_files/start_simpler_env.sh ${MODEL_PATH} 
 ```
 This script will automatically launch the WidowX Robot evaluation tasks, reproducing the benchmark results reported above.
 
