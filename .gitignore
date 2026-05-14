@@ -150,6 +150,7 @@ dmypy.json
 
 # Caches and Datasets
 cache/
+.small_fit_cache/
 data/
 playground/Models
 =4.43.2
@@ -250,3 +251,4 @@ tmp
 logs/*
 **/.nf*
 code
+benchmark_env/

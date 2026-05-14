@@ -232,10 +232,16 @@ class baseframework(PreTrainedModel):
         pretrained_checkpoint = Path(pretrained_checkpoint)
         model_config, norm_stats = read_mode_config(pretrained_checkpoint)  # read config and norm_stats
 
+        # from_pretrained is the inference entry point.  Training-only flags such as
+        # enable_decoder_loss must be forced off here so that evaluation does not
+        # build heavyweight training-only submodules (e.g. a CoT text decoder).
+        if isinstance(model_config, dict) and "cot" in model_config:
+            model_config["cot"]["enable_decoder_loss"] = False
+
         config = dict_to_namespace(model_config)
         model_config = config
         model_config.trainer.pretrained_checkpoint = None
-        
+
         FrameworkModel = build_framework(cfg=model_config)
         # set for action un-norm
         FrameworkModel.norm_stats = norm_stats

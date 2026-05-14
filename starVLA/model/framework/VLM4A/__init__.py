@@ -6,3 +6,6 @@ as the perception backbone live here.
 The registry decorator on each class registers them in FRAMEWORK_REGISTRY,
 so `build_framework(cfg)` can find them after auto-import.
 """
+
+# Keep explicit imports for frameworks that may be referenced directly by name in configs.
+from .QwenGR00TImplicitCoT import QwenGR00TImplicitCoT  # noqa: F401

@@ -117,6 +117,12 @@ def get_args():
     parser.add_argument("--async-freq", type=int, default=1)
     parser.add_argument("--host", type=str, default="127.0.0.1", help="Octo init rng seed")
     parser.add_argument("--port", type=int, default=10093)
+    parser.add_argument(
+        "--result-json",
+        type=str,
+        default=None,
+        help="Optional structured result output path for the final eval summary",
+    )
 
     args = parser.parse_args()
 

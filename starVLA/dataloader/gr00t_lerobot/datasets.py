@@ -594,6 +594,7 @@ class LeRobotSingleDataset(Dataset):
         self._action_mode_apply_keys = None
 
         self.delete_pause_frame = delete_pause_frame
+        self.skip_empty_language = bool(self.data_cfg.get("skip_empty_language", True)) if self.data_cfg else True
 
         self.modality_configs = modality_configs
         self.video_backend = video_backend
@@ -822,7 +823,13 @@ class LeRobotSingleDataset(Dataset):
             pf for pf in parquet_files if "episode_033675.parquet" not in pf.name
         ]
 
+        ready_path = stats_path.with_suffix(".ready")
+
         if is_main():
+            # Remove stale ready signal so non-main ranks don't read an
+            # unfinished cache when the config changes and triggers a recompute.
+            if ready_path.exists():
+                ready_path.unlink()
             le_statistics = _load_or_compute_statistics(
                 stats_path,
                 stats_cache_config=stats_cache_config,
@@ -837,11 +844,24 @@ class LeRobotSingleDataset(Dataset):
                 action_mode_apply_keys=apply_keys,
                 action_mode_state_map=normalized_state_map,
             )
+            # Signal non-main ranks that the statistics cache is ready.
+            ready_path.write_text("ready")
         else:
             le_statistics = None
 
         if dist.is_initialized():
-            dist.barrier()
+            if not is_main():
+                # Poll for the ready signal file instead of calling dist.barrier()
+                # immediately, which would trigger NCCL init and time out while
+                # rank 0 is still computing statistics on many parquet files.
+                import time as _time
+                _deadline = _time.monotonic() + 7200  # match init_process_group timeout
+                while not ready_path.exists():
+                    if _time.monotonic() > _deadline:
+                        raise RuntimeError(
+                            f"Timed out waiting for statistics cache ready signal: {ready_path}"
+                        )
+                    _time.sleep(1)
 
         if le_statistics is None:
             le_statistics = _load_stats_cache(
@@ -948,7 +968,7 @@ class LeRobotSingleDataset(Dataset):
             return (not dist.is_initialized()) or dist.get_rank() == 0
     
         config_key = self._get_steps_config_key()
-        steps_filename = "steps_data_index.pkl"
+        steps_filename = f"steps_data_index_{config_key}.pkl"
         steps_path = self.dataset_path / "meta" / steps_filename
     
         # ---------- try to read from cache  ----------
@@ -956,7 +976,8 @@ class LeRobotSingleDataset(Dataset):
             try:
                 with open(steps_path, "rb") as f:
                     cached_data = pickle.load(f)
-                return cached_data["steps"]
+                if cached_data.get("config_key") == config_key:
+                    return cached_data["steps"]
             except Exception as e:
                 # include EOFError / PickleError / KeyError
                 print(
@@ -975,6 +996,7 @@ class LeRobotSingleDataset(Dataset):
                 "total_steps": len(all_steps),
                 "computed_timestamp": pd.Timestamp.now().isoformat(),
                 "delete_pause_frame": self.delete_pause_frame,
+                "skip_empty_language": self.skip_empty_language,
             }
     
             steps_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1000,6 +1022,7 @@ class LeRobotSingleDataset(Dataset):
         """Generate a configuration key for steps caching."""
         config_dict = {
             "delete_pause_frame": self.delete_pause_frame,
+            "skip_empty_language": self.skip_empty_language,
             "dataset_name": self.dataset_name,
         }
         # Create a hash of the configuration
@@ -1010,7 +1033,9 @@ class LeRobotSingleDataset(Dataset):
     def _get_all_steps_single_process(self) -> list[tuple[int, int]]:
         """Original single-process implementation as fallback."""
         all_steps: list[tuple[int, int]] = []
-        skipped_trajectories = 0
+        skipped_empty_language_trajectories = 0
+        skipped_empty_after_pause_filter_trajectories = 0
+        skipped_read_error_trajectories = 0
         processed_trajectories = 0
         
         # Check if language modality is configured
@@ -1026,33 +1051,73 @@ class LeRobotSingleDataset(Dataset):
                 trajectory_skipped = False
             
                 # Check if trajectory has valid language instruction (if language modality is configured)
-                if has_language_modality:
+                if has_language_modality and self.skip_empty_language:
                     self.curr_traj_data = data  # Set current trajectory data for get_language to work
 
                     language_instruction = self.get_language(trajectory_id, self.modality_keys['language'][0], 0)
                     if not language_instruction or language_instruction[0] == "":
                         print(f"Skipping trajectory {trajectory_id} due to empty language instruction")
-                        skipped_trajectories += 1
+                        skipped_empty_language_trajectories += 1
                         trajectory_skipped = True
                         continue
 
             except Exception as e:
                 print(f"Skipping trajectory {trajectory_id} due to read error: {e}")
-                skipped_trajectories += 1
+                skipped_read_error_trajectories += 1
                 trajectory_skipped = True
                 continue
         
             if not trajectory_skipped:
                 processed_trajectories += 1
-        
-            for base_index in range(trajectory_length):
-                all_steps.append((trajectory_id, base_index))
+
+            if self.delete_pause_frame:
+                kept_steps = self._filter_pause_steps(data)
+                if kept_steps.size == 0:
+                    skipped_empty_after_pause_filter_trajectories += 1
+                    continue
+                for base_index in kept_steps.tolist():
+                    all_steps.append((trajectory_id, int(base_index)))
+            else:
+                for base_index in range(trajectory_length):
+                    all_steps.append((trajectory_id, base_index))
                 
         # Print summary statistics
-        print(f"Single-process summary: Processed {processed_trajectories} trajectories, skipped {skipped_trajectories} empty trajectories")
+        print(
+            "Single-process summary: "
+            f"Processed {processed_trajectories} trajectories, "
+            f"skipped_empty_language={skipped_empty_language_trajectories}, "
+            f"skipped_empty_after_pause_filter={skipped_empty_after_pause_filter_trajectories}, "
+            f"skipped_read_error={skipped_read_error_trajectories}"
+        )
         print(f"Total steps: {len(all_steps)} from {len(self.trajectory_ids)} trajectories")
                    
         return all_steps
+
+    def _filter_pause_steps(self, data: pd.DataFrame) -> np.ndarray:
+        delta_position_values, gripper_values = self._get_position_and_gripper_values(data)
+        delta_position = np.asarray(delta_position_values, dtype=np.float32)
+        gripper = np.asarray(gripper_values, dtype=np.float32)
+
+        if delta_position.ndim == 1:
+            delta_position = delta_position[:, None]
+        if gripper.ndim > 1:
+            gripper = gripper.reshape(gripper.shape[0], -1)[:, 0]
+
+        moving = np.linalg.norm(delta_position, axis=1) > EPSILON
+        if gripper.size > 1:
+            gripper_change = np.zeros_like(gripper, dtype=bool)
+            gripper_change[1:] = np.abs(np.diff(gripper)) > EPSILON
+        else:
+            gripper_change = np.zeros_like(gripper, dtype=bool)
+
+        keep_mask = moving | gripper_change
+        if keep_mask.size > 0:
+            keep_mask[0] = True
+
+        keep_indices = np.flatnonzero(keep_mask)
+        if keep_indices.size == 0 and len(data) > 0:
+            keep_indices = np.array([0], dtype=np.int64)
+        return keep_indices.astype(np.int64, copy=False)
 
     def _get_position_and_gripper_values(self, data: pd.DataFrame) -> tuple[list, list]:
         """Get position and gripper values based on available columns in the dataset."""
@@ -1427,7 +1492,10 @@ class LeRobotSingleDataset(Dataset):
                     episode_chunk=chunk_index, episode_index=trajectory_id
                 )
                 assert parquet_path.exists(), f"Parquet file not found at {parquet_path}"
-                return pd.read_parquet(parquet_path)
+                trajectory_data = pd.read_parquet(parquet_path)
+                self.curr_traj_id = trajectory_id
+                self.curr_traj_data = trajectory_data
+                return trajectory_data
         elif self._lerobot_version == "v3.0":
             return self.get_trajectory_data_lerobot_v3(trajectory_id)
     
@@ -1450,6 +1518,8 @@ class LeRobotSingleDataset(Dataset):
             
             # filter by trajectory_id
             episode_data = file_data.loc[file_data["episode_index"] == trajectory_id].copy()
+            self.curr_traj_id = trajectory_id
+            self.curr_traj_data = episode_data
             return episode_data
 
 

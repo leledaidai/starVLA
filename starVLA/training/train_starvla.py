@@ -12,6 +12,7 @@ Conventions:
 
 # Standard Library
 import argparse
+import datetime
 import json
 import os
 import re
@@ -37,6 +38,15 @@ from starVLA.dataloader import build_dataloader
 from starVLA.model.framework.base_framework import build_framework
 from starVLA.training.trainer_utils.config_tracker import AccessTrackedConfig, wrap_config
 from starVLA.training.trainer_utils.trainer_tools import TrainerUtils, build_param_lr_groups, normalize_dotlist_args
+
+# Set up distributed process group with an extended timeout before
+# Accelerator so slow dataset pre-processing (parquet scanning on
+# cold cache) does not cause ranks to timeout waiting for rank 0.
+if not torch.distributed.is_initialized():
+    torch.distributed.init_process_group(
+        backend="nccl",
+        timeout=datetime.timedelta(seconds=7200),
+    )
 
 deepspeed_plugin = DeepSpeedPlugin()
 accelerator = Accelerator(deepspeed_plugin=deepspeed_plugin)

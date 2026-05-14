@@ -31,3 +31,4 @@ timm
 tyro
 websockets
 tdigest==0.5.2.2
+peft

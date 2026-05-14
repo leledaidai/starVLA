@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 import numpy as np
 import torch.distributed as dist
 from pathlib import Path
-from starVLA.dataloader.vlm_datasets import make_vlm_dataloader
+
 
 logger = get_logger(__name__)
 
@@ -36,24 +36,28 @@ def save_dataset_statistics(dataset_statistics, run_dir):
 def build_dataloader(cfg, dataset_py="lerobot_datasets_oxe"): # TODO now here only is get dataset, we need mv dataloader to here
 
     if dataset_py == "lerobot_datasets":
-        from starVLA.dataloader.lerobot_datasets import get_vla_dataset, collate_fn
+        from starVLA.dataloader.lerobot_datasets import build_vla_collate_fn, get_vla_dataset
         vla_dataset_cfg = cfg.datasets.vla_data
 
-        vla_dataset = get_vla_dataset(data_cfg=vla_dataset_cfg)
+        vla_dataset = get_vla_dataset(data_cfg=vla_dataset_cfg, full_cfg=cfg)
+        num_workers = int(getattr(cfg.datasets.vla_data, "num_workers", 4))
+        persistent_workers = bool(getattr(cfg.datasets.vla_data, "persistent_workers", num_workers > 0))
         
         vla_train_dataloader = DataLoader(
             vla_dataset,
             batch_size=cfg.datasets.vla_data.per_device_batch_size,
-            collate_fn=collate_fn,
-            num_workers=4,
+            collate_fn=build_vla_collate_fn(cfg),
+            num_workers=num_workers,
+            persistent_workers=persistent_workers if num_workers > 0 else False,
             # shuffle=True
         )        
-        if dist.get_rank() == 0: 
+        if (not dist.is_initialized()) or dist.get_rank() == 0:
             
             output_dir = Path(cfg.output_dir)
             vla_dataset.save_dataset_statistics(output_dir / "dataset_statistics.json")
         return vla_train_dataloader
     elif dataset_py == "vlm_datasets":
+        from starVLA.dataloader.vlm_datasets import make_vlm_dataloader
         vlm_data_module = make_vlm_dataloader(cfg)
         vlm_train_dataloader = vlm_data_module["train_dataloader"]
         

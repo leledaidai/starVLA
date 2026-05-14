@@ -1,0 +1,69 @@
+(starVLA) [root:starVLA]$ python test_cot_eos.py --ckpt results/Checkpoints/teacher_only_cot_bridge_train_cot_qwen3vl4b --max-cot-tokens 435 --num-samples 5
+[*] Using checkpoint: results/Checkpoints/teacher_only_cot_bridge_train_cot_qwen3vl4b/checkpoints/steps_100000_pytorch_model.pt
+[*] Loading model via from_pretrained ...
+05/02 [06:31:57] INFO     | >> [*] Loading from local checkpoint path                                                          share_tools.py:323
+                          `results/Checkpoints/teacher_only_cot_bridge_train_cot_qwen3vl4b/checkpoints/steps_100000_pytorch_mo                   
+                          del.pt`                                                                                                                
+[CoT] Loaded field order: ['task', 'plan', 'bboxes', 'subtask_reason', 'subtask', 'move_reason', 'move', 'gripper']
+Loading checkpoint shards: 100%|███████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 20.98it/s]
+Total number of DiT parameters:  158213632
+[*] Model eval_mode: teacher
+[*] EOS token id: 151645, EOS token str: '<|im_end|>'
+[*] Model enables: teacher_cot=True, teacher_action=True, student_action=False
+[*] max_cot_length config: 435
+
+[1/5] Instruction: pick up the red block and place it on the blue block
+Casting fp32 inputs back to torch.float16 for flash-attn compatibility.
+    Status: ✗ NO EOS (hit max_tokens!)
+    Generated tokens: 435, EOS at pos: -1
+    Tokens after EOS: 0
+    Generation time: 15.75s
+    CoT preview: TASK: The task is to pick up the red block and place it on the blue block. PLAN: The plan is to move to the red block, pick it up, move to the blue block, and place it on the blue block. VISIBLE OBJECTS: a robot [62, 1, 128, 29], a robot [31, 0, 129, 31] SUBTASK REASONING: The red block is the close
+
+[2/5] Instruction: open the drawer
+    Status: ✗ NO EOS (hit max_tokens!)
+    Generated tokens: 435, EOS at pos: -1
+    Tokens after EOS: 0
+    Generation time: 14.39s
+    CoT preview: TASK: Open the drawer. PLAN: Move to the drawer. Grasp the handle. Pull the drawer open. Release the handle. Move away from the drawer. VISIBLE OBJECTS: a drawer a silver handle [106, 112, 135, 138], a red object [110, 115, 119, 130], a drawer a silver handle [100, 107, 141, 145] SUBTASK REASONING: 
+
+[3/5] Instruction: put the carrot on the plate
+    Status: ✗ NO EOS (hit max_tokens!)
+    Generated tokens: 435, EOS at pos: -1
+    Tokens after EOS: 0
+    Generation time: 14.36s
+    CoT preview: TASK: Put the carrot on the plate. PLAN: Move to the carrot, grasp the carrot, move to the plate, place the carrot on the plate. VISIBLE OBJECTS: a plate [12, 242, 67, 255], a red cup [180, 0, 210, 7], which is on a white napkin [222, 242, 255, 255] SUBTASK REASONING: The carrot is fully placed on t
+
+[4/5] Instruction: move the spoon next to the bowl
+    Status: ✗ NO EOS (hit max_tokens!)
+    Generated tokens: 298, EOS at pos: -1
+    Tokens after EOS: 0
+    Generation time: 9.76s
+    CoT preview: TASK: Move the spoon next to the bowl. PLAN: Move to the spoon, grasp the spoon, move the spoon to the bowl, release the spoon. VISIBLE OBJECTS: a purple the spoon [142, 172, 157, 194], a purple the spoon [139, 169, 161, 200], a silver bowl [117, 0, 148, 32], a silver and a silver bowl the spoon [11
+
+[5/5] Instruction: stack the green block on the yellow block
+    Status: ✗ NO EOS (hit max_tokens!)
+    Generated tokens: 435, EOS at pos: -1
+    Tokens after EOS: 0
+    Generation time: 14.46s
+    CoT preview: TASK: The task is to stack the green block on the yellow block. PLAN: Prepare to grasp the green block, grasp the green block, lift the green block, move the green block to a position above the yellow block, place the green block on top of the yellow block VISIBLE OBJECTS: a red block [170, 152, 190
+
+================================================================================
+SUMMARY
+================================================================================
+Total samples: 5
+Stopped at EOS: 0/5 (0%)
+No EOS (max cutoff): 5/5 (100%)
+Average generation time (no EOS): 13.74s
+Wasted time per sample without EOS: ~13.74s
+
+*** WARNING: Model does NOT reliably generate <|im_end|> for CoT text! ***
+    This means generation runs to max_cot_length every time, wasting compute
+    and making inference much slower than necessary.
+    Fix: add <|im_end|> to CoT training labels in cot_dataset.py so the
+    model learns to emit EOS at the end of CoT text.
+
+================================================================================
+FULL CoT TEXT (sample 0)
+================================================================================
+TASK: The task is to pick up the red block and place it on the blue block. PLAN: The plan is to move to the red block, pick it up, move to the blue block, and place it on the blue block. VISIBLE OBJECTS: a robot [62, 1, 128, 29], a robot [31, 0, 129, 31] SUBTASK REASONING: The red block is the closest to the robot, and it is the first block that needs to be picked up. SUBTASK: The first subtask is to move to the red block. MOVE REASONING: The red block is in front of the robot, so the robot needs to move forward to reach it. MOVE: The robot should move forward. GRIPPER POSITION: [83, 45, 83, 45, 83, 45, 83, 45, 83, 45] GRIPPER POSITION: [83, 45, 83, 45, 83, 45, 95, 27, 95, 27] forward GRIPPER POSITION: [83, 45, 93, 34, 101, 33, 107, 33, 107, 41] GRIPPER POSITION: [107, 41, 107, 41, 109, 43, 105, 45, 101, 43] VISIBLE OBJECTS: block the red block [160, 139, 179, 165], a robot [16, 0, 129, 32], the scene [3, 0, 247, 252] SUBTASK: The first subtask is to move to the red

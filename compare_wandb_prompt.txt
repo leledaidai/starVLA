@@ -1,0 +1,11 @@
+
+/inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/results/Checkpoints/428_bridge_train_cot_qwen3GR00T_baseline_allprompt
+/inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/results/Checkpoints/latent_cot_full_loss_bridge_train_cot_qwen3vl4b_fields_3
+/inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/results/Checkpoints/latent_cot_full_loss_bridge_train_cot_qwen3vl4b_fields_5
+/inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/results/Checkpoints/latent_cot_full_loss_bridge_train_cot_qwen3vl4b
+这四个分别是我用四种配置训练的模型，第一个是baseline model，后面三个是latent cot vla model，后面三个的训练配置只有fields name是不同的，也就是中间的cot文本由几个字段组成，分别是3个、5个和8个，你比较一下他们的wandb日志会发现，后面三个模型的student_action_loss和teacher_action_loss一直比baseline要高，奇怪的是fields较少的field_3的student_action_loss比fields_5高，fields_5比fields_8高，这是很奇怪的，正常cot文本变短了，cot loss降低了，应该有更多的梯度降低student_action_loss,让他更低一些才对，而且已知baseline这种不加cot的student_action_loss最低，那么cot添加的越少student_action_loss应该相对越低，但是事实却不是这样，在simpler上的评测结果也是baseline比latent cot vla的成功率要高，fields_8>fields_3>fields_5,结果如下：
+模型配置	模型路径	最高点数	最高点数对应step	第二高点数	第二高点数对应step
+latent_cot_full_loss	results/Checkpoints/latent_cot_full_loss_bridge_train_cot_qwen3vl4b	0.625	80000	0.59375	50000
+latent_cot_full_loss_fields_5	全部	0.552083	65000	0.53125	60000	  fields: task plan bboxes subtask move
+latent_cot_full_loss_fields_3	全部	0.604167	90000	0.583333	65000	  fields: plan subtask move
+请你帮我分析可能是什么原因呢？

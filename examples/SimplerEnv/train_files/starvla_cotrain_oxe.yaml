@@ -6,6 +6,30 @@ wandb_entity: your_wandb_entity
 wandb_project: llavavla
 is_debug: false
 
+cot:
+  enable_teacher_cot_loss: false
+  enable_teacher_action_loss: false
+  enable_student_action_loss: false
+  enable_decoder_loss: false
+  enable_distill_loss: false
+  teacher_cot_loss_weight: 1.0
+  teacher_action_loss_weight: 1.0
+  student_action_loss_weight: 1.0
+  decoder_loss_weight: 1.0
+  distill_loss_weight: 5.0
+  max_cot_length: 435
+  teacher_max_prompt_length: 750
+  student_max_prompt_length: 230
+  fields:
+    - name: task
+    - name: plan
+    - name: bboxes
+    - name: subtask_reason
+    - name: subtask
+    - name: move_reason
+    - name: move
+    - name: gripper
+
 framework:
   name: QwenGR00T
   qwenvl:
@@ -63,8 +87,10 @@ datasets:
   vla_data:
     dataset_py: lerobot_datasets
     data_root_dir: playground/Datasets/OXE_LEROBOT_DATASET
-    data_mix: bridge_rt_1 # bridge_rt_1
+    data_mix: bridge_openpi_cot_train # switch to bridge_openpi_cot_train_valid after train+val dataset is ready
     action_type: delta_ee
+    skip_empty_language: true
+    delete_pause_frame: false
     CoT_prompt: "Your task is {instruction}. To identify the key objects for your task. Locate their bounding boxes in [x1,y1,x2,y2] format."
     CoT_answer: bbox
     default_image_resolution: [3, 224, 224]

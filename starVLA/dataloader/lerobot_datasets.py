@@ -8,6 +8,11 @@ from pathlib import Path
 from typing import Sequence
 from omegaconf import OmegaConf
 
+from starVLA.dataloader.cot_dataset import (
+    ImplicitCotCollator,
+    get_cot_vla_dataset,
+    get_cot_vla_dataset_small_fit,
+)
 from starVLA.dataloader.gr00t_lerobot.datasets import LeRobotSingleDataset, LeRobotMixtureDataset
 from starVLA.dataloader.gr00t_lerobot.registry import (
     ROBOT_TYPE_CONFIG_MAP,
@@ -18,6 +23,22 @@ from starVLA.dataloader.gr00t_lerobot.registry import (
 
 def collate_fn(batch):
     return batch
+
+
+def build_vla_collate_fn(cfg=None):
+    cot_cfg = cfg.cot if cfg is not None and hasattr(cfg, "cot") else None
+    if cot_cfg is not None:
+        enable_flags = (
+            bool(cot_cfg.get("enable_teacher_cot_loss", False)),
+            bool(cot_cfg.get("enable_teacher_action_loss", False)),
+            bool(cot_cfg.get("enable_student_action_loss", False)),
+            bool(cot_cfg.get("enable_decoder_loss", False)),
+            bool(cot_cfg.get("enable_slot_distill_loss", False)),
+            bool(cot_cfg.get("enable_pool_distill_loss", False)),
+        )
+        if any(enable_flags):
+            return ImplicitCotCollator(cfg)
+    return collate_fn
 
 def make_LeRobotSingleDataset(
     data_root_dir: Path | str,
@@ -63,11 +84,32 @@ def get_vla_dataset(
     balance_dataset_weights: bool = False,
     balance_trajectory_weights: bool = False,
     seed: int = 42,
+    full_cfg=None,
     **kwargs: dict,
 ) -> LeRobotMixtureDataset:
     """
     Get a LeRobotMixtureDataset object.
     """
+    cot_cfg = full_cfg.cot if full_cfg is not None and hasattr(full_cfg, "cot") else None
+    if cot_cfg is not None:
+        enable_flags = (
+            bool(cot_cfg.get("enable_teacher_cot_loss", False)),
+            bool(cot_cfg.get("enable_teacher_action_loss", False)),
+            bool(cot_cfg.get("enable_student_action_loss", False)),
+            bool(cot_cfg.get("enable_decoder_loss", False)),
+            bool(cot_cfg.get("enable_slot_distill_loss", False)),
+            bool(cot_cfg.get("enable_pool_distill_loss", False)),
+        )
+        if any(enable_flags):
+            return get_cot_vla_dataset(
+                full_cfg=full_cfg,
+                mode=mode,
+                balance_dataset_weights=balance_dataset_weights,
+                balance_trajectory_weights=balance_trajectory_weights,
+                seed=seed,
+                **kwargs,
+            )
+
     data_root_dir = data_cfg.data_root_dir
     data_mix = data_cfg.data_mix
     delete_pause_frame = data_cfg.get("delete_pause_frame", False)
@@ -97,6 +139,29 @@ def get_vla_dataset(
     )
 
 
+def get_vla_dataset_small_fit(
+    data_cfg: dict,
+    mode: str = "train",
+    balance_dataset_weights: bool = False,
+    balance_trajectory_weights: bool = False,
+    seed: int = 42,
+    full_cfg=None,
+    **kwargs: dict,
+) -> LeRobotMixtureDataset:
+    cot_cfg = full_cfg.cot if full_cfg is not None and hasattr(full_cfg, "cot") else None
+    small_fit_cfg = full_cfg.small_fit if full_cfg is not None and hasattr(full_cfg, "small_fit") else None
+    if cot_cfg is None or small_fit_cfg is None:
+        raise ValueError("Small-fit VLA dataset requires both `cot` and `small_fit` config sections.")
+    return get_cot_vla_dataset_small_fit(
+        full_cfg=full_cfg,
+        mode=mode,
+        balance_dataset_weights=balance_dataset_weights,
+        balance_trajectory_weights=balance_trajectory_weights,
+        seed=seed,
+        **kwargs,
+    )
+
+
 
 if __name__ == "__main__":
     import argparse
@@ -117,13 +182,13 @@ if __name__ == "__main__":
     for task_id in ["all"]:
         vla_dataset_cfg.task_id = task_id
         print(f"Testing Task ID: {task_id}")
-        dataset = get_vla_dataset(data_cfg=vla_dataset_cfg)
+        dataset = get_vla_dataset(data_cfg=vla_dataset_cfg, full_cfg=cfg)
     from torch.utils.data import DataLoader
     train_dataloader = DataLoader(
         dataset,
         batch_size=2,
         num_workers=1, # For Debug
-        collate_fn=collate_fn,
+        collate_fn=build_vla_collate_fn(cfg),
     )
 
     cfg.output_dir = "./results/debug"
