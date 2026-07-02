@@ -10,12 +10,12 @@ from starVLA.dataloader.cot_formatter import SUPPORTED_COT_FIELDS
 
 
 DEFAULT_REASONING_PATH = Path(
-    "/inspire/hdd/global_user/gongjingjing-25039/zhdai/hf_cache/hub/"
+    "/inspire/hdd/global_user/daizihao-CZXS25110035/zhdai/hf_cache/hub/"
     "datasets--Embodied-CoT--embodied_features_bridge/snapshots/"
     "854ee59c7c76868d63fac37c33e0f031ed678014/embodied_features_bridge.json"
 )
 DEFAULT_OUTPUT_DIR = Path(
-    "/inspire/hdd/global_user/gongjingjing-25039/zhdai/datasets/bridge_orig_openpi_cot_source_db"
+    "/inspire/hdd/global_user/daizihao-CZXS25110035/zhdai/datasets/bridge_orig_openpi_cot_source_db"
 )
 
 IMPLICIT_COT_TAGS = [

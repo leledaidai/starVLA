@@ -5,9 +5,9 @@
 # --------------------
 # 已完成的：修复 /usr/share (未解决全部问题)
 # --------------------
-cp /inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/local_nvidia_icd.json /usr/share/vulkan/icd.d/nvidia_icd.json
+cp /inspire/hdd/global_user/daizihao-CZXS25110035/zhdai/starVLA/local_nvidia_icd.json /usr/share/vulkan/icd.d/nvidia_icd.json
 
-# cp /inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/local_nvidia_icd.json /etc/vulkan/icd.d/nvidia_icd.json
+# cp /inspire/hdd/global_user/daizihao-CZXS25110035/zhdai/starVLA/local_nvidia_icd.json /etc/vulkan/icd.d/nvidia_icd.json
 # ↑ /etc 是只读文件系统，此命令失败
 
 
@@ -16,14 +16,14 @@ cp /inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/local_nvidia_icd.js
 # Vulkan Loader 优先扫描 ~/.local/share/vulkan/icd.d/，高于 /etc
 # --------------------
 mkdir -p ~/.local/share/vulkan/icd.d/
-cp /inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/local_nvidia_icd.json ~/.local/share/vulkan/icd.d/nvidia_icd.json
+cp /inspire/hdd/global_user/daizihao-CZXS25110035/zhdai/starVLA/local_nvidia_icd.json ~/.local/share/vulkan/icd.d/nvidia_icd.json
 
 
 # --------------------
 # 方案二：bind mount 覆盖 /etc 下的空文件（需要 root）
 # 用正确文件"盖住"只读文件系统上的空文件
 # --------------------
-# mount --bind /inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/local_nvidia_icd.json /etc/vulkan/icd.d/nvidia_icd.json
+# mount --bind /inspire/hdd/global_user/daizihao-CZXS25110035/zhdai/starVLA/local_nvidia_icd.json /etc/vulkan/icd.d/nvidia_icd.json
 
 
 # --------------------

@@ -21,11 +21,11 @@ conda activate starVLA
 ###########################################################################################
 # Default checkpoint path. You can override it from the command line:
 # bash examples/SimplerEnv/train_files/run_bridge_small_fit_eval_ckpt.sh /abs/path/to/pytorch_model.pt
-default_ckpt_path=/inspire/hdd/global_user/gongjingjing-25039/zhdai/starVLA/results/Checkpoints/implicit_cot_small_fit_full_loss_bridge_train_cot_qwen3vl4b/checkpoints/steps_15000_pytorch_model.pt
+default_ckpt_path=/inspire/hdd/global_user/daizihao-CZXS25110035/zhdai/starVLA/results/Checkpoints/implicit_cot_small_fit_full_loss_bridge_train_cot_qwen3vl4b/checkpoints/steps_15000_pytorch_model.pt
 ###########################################################################################
 
 manifest_path=./starVLA/config/small_fit/bridge_train_cot_first100_episodes.json
-oxe_data_root=/inspire/hdd/global_user/gongjingjing-25039/zhdai/datasets
+oxe_data_root=/inspire/hdd/global_user/daizihao-CZXS25110035/zhdai/datasets
 data_mix=bridge_train_cot
 base_vlm=./playground/Pretrained_models/Qwen3-VL-4B-Instruct-Action
 eval_batch_size=8

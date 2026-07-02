@@ -32,7 +32,7 @@ freeze_module_list=''
 base_vlm=./playground/Pretrained_models/Qwen3-VL-4B-Instruct-Action
 # 使用训练时保存的 config，保证架构参数（cross_attention_dim=2560 等）完全一致
 config_yaml=./results/Checkpoints/latent_cot_distill_off_bridge_train_cot_qwen3vl4b/config.yaml
-oxe_data_root=/inspire/hdd/global_user/gongjingjing-25039/zhdai/datasets
+oxe_data_root=/inspire/hdd/global_user/daizihao-CZXS25110035/zhdai/datasets
 data_mix=bridge_train_cot
 
 # Resume from checkpoint

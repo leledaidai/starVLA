@@ -11,11 +11,11 @@ from typing import Any
 from starVLA.dataloader.bridge_cot_sidecar import BridgeCotSourceDbReader, BridgeCotSidecarReader
 
 
-DEFAULT_RLDS_ROOT = Path("/inspire/hdd/global_user/gongjingjing-25039/zhdai/openpi_dataset_bridge")
-DEFAULT_SOURCE_DB_DIR = Path("/inspire/hdd/global_user/gongjingjing-25039/zhdai/datasets/bridge_orig_openpi_cot_source_db")
-DEFAULT_DATASET_DIR = Path("/inspire/hdd/global_user/gongjingjing-25039/zhdai/datasets/bridge_orig_lerobot")
-DEFAULT_OUTPUT_DIR = Path("/inspire/hdd/global_user/gongjingjing-25039/zhdai/datasets/bridge_orig_lerobot_cot_index")
-ANY4LEROBOT_ROOT = Path("/inspire/hdd/global_user/gongjingjing-25039/zhdai/any4lerobot")
+DEFAULT_RLDS_ROOT = Path("/inspire/hdd/global_user/daizihao-CZXS25110035/zhdai/openpi_dataset_bridge")
+DEFAULT_SOURCE_DB_DIR = Path("/inspire/hdd/global_user/daizihao-CZXS25110035/zhdai/datasets/bridge_orig_openpi_cot_source_db")
+DEFAULT_DATASET_DIR = Path("/inspire/hdd/global_user/daizihao-CZXS25110035/zhdai/datasets/bridge_orig_lerobot")
+DEFAULT_OUTPUT_DIR = Path("/inspire/hdd/global_user/daizihao-CZXS25110035/zhdai/datasets/bridge_orig_lerobot_cot_index")
+ANY4LEROBOT_ROOT = Path("/inspire/hdd/global_user/daizihao-CZXS25110035/zhdai/any4lerobot")
 OPENX2LEROBOT_ROOT = ANY4LEROBOT_ROOT / "openx2lerobot"
 
 

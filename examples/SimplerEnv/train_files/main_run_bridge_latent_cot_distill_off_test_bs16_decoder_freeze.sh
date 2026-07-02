@@ -31,7 +31,7 @@ Framework_name=QwenGR00TImplicitCoT
 freeze_module_list='decoder_language_model,decoder_lm_head'
 base_vlm=./playground/Pretrained_models/Qwen3-VL-4B-Instruct-Action
 config_yaml=./starVLA/config/training/train_latent_vla/starvla_bridge_latent_cot_distill_off_test_weight_small.yaml
-oxe_data_root=/inspire/hdd/global_user/gongjingjing-25039/zhdai/datasets
+oxe_data_root=/inspire/hdd/global_user/daizihao-CZXS25110035/zhdai/datasets
 data_mix=bridge_train_cot
 
 num_processes=8

@@ -828,13 +828,15 @@ class QwenGR00TImplicitCoT(baseframework):
         cot_slot_mask: torch.Tensor,
         *,
         decode_text: bool = False,
-    ) -> tuple[torch.Tensor, list[list[str]]]:
+    ) -> tuple[torch.Tensor, dict[str, torch.Tensor], list[list[str]]]:
         batch_size, num_slots, _ = cot_labels.shape
         total_loss = latent_hidden.new_zeros(())
         total_weight = latent_hidden.new_zeros(())
+        per_slot_losses: dict[str, torch.Tensor] = {}
         decoded_texts: list[list[str]] = [[] for _ in range(batch_size)]
 
         for slot_idx in range(num_slots):
+            field_name = self.field_names[slot_idx] if slot_idx < len(self.field_names) else f"slot_{slot_idx}"
             slot_mask = cot_slot_mask[:, slot_idx].to(device=latent_hidden.device, dtype=torch.bool)
 
             slot_latent = latent_hidden[:, slot_idx, :]
@@ -847,6 +849,12 @@ class QwenGR00TImplicitCoT(baseframework):
             )
             total_loss = total_loss + slot_loss_sum
             total_weight = total_weight + slot_token_count.to(total_loss.dtype)
+
+            # Per-slot average decoder loss for logging (detached to avoid
+            # holding unnecessary computation graph; does not affect training).
+            per_slot_losses[f"decoder_loss_{field_name}"] = (
+                slot_loss_sum / slot_token_count.clamp_min(1.0)
+            ).detach()
 
             if decode_text:
                 if bool(slot_mask.any()):
@@ -868,7 +876,7 @@ class QwenGR00TImplicitCoT(baseframework):
             else:
                 continue
 
-        return total_loss / total_weight.clamp_min(1.0), decoded_texts
+        return total_loss / total_weight.clamp_min(1.0), per_slot_losses, decoded_texts
 
     def _vector_distill_loss(
         self,
@@ -989,6 +997,7 @@ class QwenGR00TImplicitCoT(baseframework):
         pool_distill_loss = action_labels.new_zeros(())
         sum_of_distill_loss = action_labels.new_zeros(())
         decoded_cot_texts: list[list[str]] = [[] for _ in range(action_labels.shape[0])]
+        per_slot_decoder_losses: dict[str, torch.Tensor] = {}
         if student_outputs is not None:
             student_hidden = student_outputs["hidden_states"]
             latent_hidden = student_outputs["latent_hidden"]
@@ -1000,7 +1009,7 @@ class QwenGR00TImplicitCoT(baseframework):
                     state_tensor.to(dtype=student_hidden.dtype) if state_tensor is not None else None,
                 )
             if self.enable_decoder_loss:
-                decoder_loss, decoded_cot_texts = self._decoder_loss(
+                decoder_loss, per_slot_decoder_losses, decoded_cot_texts = self._decoder_loss(
                     latent_hidden=latent_hidden,
                     cot_labels=batch["cot_labels"].to(self.device),
                     cot_label_mask=batch["cot_label_mask"].to(self.device),
@@ -1089,6 +1098,7 @@ class QwenGR00TImplicitCoT(baseframework):
                 dtype=torch.float32,
             ),
             "decoded_cot_texts": decoded_cot_texts,
+            **per_slot_decoder_losses,
         }
 
     def _build_batch_inputs(
@@ -1346,65 +1356,6 @@ class QwenGR00TImplicitCoT(baseframework):
 
         torch.cuda.empty_cache()
         return result
-
-    # @torch.inference_mode()
-    # def predict_action_teacher_only_small_fit_debug(
-    #     self, examples: list[dict[str, Any]], **kwargs
-    # ) -> dict[str, Any]:
-    #     """Debug helper: predict actions using ground-truth CoT text (same as training teacher-forcing).
-
-    #     Unlike ``predict_action_teacher_only`` which first generates CoT tokens and then
-    #     predicts actions from them, this method directly builds teacher-style inputs from
-    #     the provided ``cot_fields_raw`` and runs a single standard forward pass.  This
-    #     eliminates the teacher-forcing gap and measures whether the model has correctly
-    #     learned to use the CoT information.
-    #     """
-    #     if type(examples) is not list:
-    #         examples = [examples]
-
-    #     decode_cot_text = bool(kwargs.get("decode_cot_text", False))
-
-    #     batch_images = [to_pil_preserve(example["image"]) for example in examples]
-    #     train_obs_image_size = getattr(self.config.framework, "obs_image_size", None)
-    #     if train_obs_image_size:
-    #         batch_images = resize_images(batch_images, target_size=train_obs_image_size)
-    #     inference_examples = [
-    #         {"image": batch_images[idx], "lang": examples[idx]["lang"],
-    #          "cot_fields_raw": examples[idx]["cot_fields_raw"]}
-    #         for idx in range(len(examples))
-    #     ]
-
-    #     teacher_inputs = self._build_batch_inputs(inference_examples, teacher_mode=True)
-    #     outputs = self._forward_standard(
-    #         input_ids=teacher_inputs["input_ids"],
-    #         attention_mask=teacher_inputs["attention_mask"],
-    #         pixel_values=teacher_inputs.get("pixel_values"),
-    #         image_grid_thw=teacher_inputs.get("image_grid_thw"),
-    #         labels=None,
-    #     )
-    #     hidden_states = outputs.hidden_states[-1]
-
-    #     state = None
-    #     if "state" in examples[0]:
-    #         state = torch.from_numpy(np.array([example["state"] for example in examples])).to(
-    #             hidden_states.device,
-    #             dtype=hidden_states.dtype,
-    #         )
-    #         if state.ndim == 2:
-    #             state = state.unsqueeze(1)
-    #     pred_actions = self._predict_action_from_hidden(
-    #         hidden_states, teacher_inputs["attention_mask"], state
-    #     )
-
-    #     result = {
-    #         "normalized_actions": pred_actions.detach().to(dtype=torch.float32).cpu().numpy(),
-    #     }
-    #     if decode_cot_text:
-    #         result["teacher_cot_texts"] = [
-    #             build_visible_cot_text(self.field_names, ex.get("cot_fields_raw", {}))
-    #             for ex in examples
-    #         ]
-    #     return result
 
     def load_state_dict(self, state_dict, strict: bool = True):
         decoder_keys = tuple(key for key in state_dict if key.startswith(("decoder_language_model.", "decoder_lm_head.", "decoder_projection.")))

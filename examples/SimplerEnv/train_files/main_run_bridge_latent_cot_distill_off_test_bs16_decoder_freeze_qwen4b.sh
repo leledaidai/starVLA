@@ -33,22 +33,22 @@ base_vlm=./playground/Pretrained_models/Qwen3-VL-4B-Instruct-Action
 decoder_type=qwen_vl_text
 decoder_model_path=${base_vlm}
 config_yaml=./starVLA/config/training/train_latent_vla/starvla_bridge_latent_cot_distill_off_test_weight_small.yaml
-oxe_data_root=/inspire/hdd/global_user/gongjingjing-25039/zhdai/datasets
+oxe_data_root=/inspire/hdd/global_user/daizihao-CZXS25110035/zhdai/datasets
 data_mix=bridge_train_cot
 
 num_processes=8
-per_device_batch_size=16
+per_device_batch_size=8
 
 dataloader_num_workers=0
 dataloader_persistent_workers=false
 
-max_train_steps=100000
+max_train_steps=40000
 save_interval=5000
 logging_frequency=100
 eval_interval=1000
 
 run_root_dir=./results/Checkpoints
-run_id=latent_cot_distill_off_test_${data_mix}_qwen3vl4b_test_bs16_new_55_decoder_freeze_qwen3vl4b_text_512new
+run_id=72_try_latent_cot_distill_off_test_${data_mix}_qwen3vl4b_test_bs16_new_55_decoder_freeze_qwen3vl4b_text_512new
 wandb_project=latent_vla_51
 wandb_entity=leledaidai-harbin-institute-of-technology
 # === End of environment variable configuration ===

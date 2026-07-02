@@ -78,7 +78,7 @@ framework:
 datasets:
   vla_data:
     dataset_py: lerobot_datasets
-    data_root_dir: /inspire/hdd/global_user/gongjingjing-25039/zhdai/datasets
+    data_root_dir: /inspire/hdd/global_user/daizihao-CZXS25110035/zhdai/datasets
     data_mix: bridge_train_cot
     action_type: delta_ee
     skip_empty_language: true
