@@ -18,19 +18,18 @@ else
 fi
 conda activate starVLA
 
-# H200 + NCCL 稳定性设置
+# NCCL 稳定性设置
 export NCCL_NVLS_ENABLE=0
-export NCCL_TIMEOUT=3600
 export TOKENIZERS_PARALLELISM=false
-
-# 快速报错，不影响性能
 export NCCL_BLOCKING_WAIT=1
 export NCCL_ASYNC_ERROR_HANDLING=1
 
+###########################################################################################
+# === Please modify the following paths according to your environment ===
 Framework_name=QwenGR00TImplicitCoT
-freeze_module_list=''
+freeze_module_list='decoder_language_model,decoder_lm_head'
 base_vlm=./playground/Pretrained_models/Qwen3-VL-4B-Instruct-Action
-config_yaml=./starVLA/config/training/train_latent_vla/starvla_bridge_latent_cot_teacher_only.yaml
+config_yaml=./starVLA/config/training/train_latent_vla/starvla_bridge_latent_cot_full_loss_codi.yaml
 oxe_data_root=/inspire/hdd/global_user/gongjingjing-25039/zhdai/datasets
 data_mix=bridge_train_cot
 
@@ -46,9 +45,11 @@ logging_frequency=100
 eval_interval=1000
 
 run_root_dir=./results/Checkpoints
-run_id=latent_cot_teacher_only_${data_mix}_519_teacher_only_new
+run_id=full_loss_codi_new_${data_mix}_qwen3vl4b_bs8_fields_3
 wandb_project=latent_vla_51
 wandb_entity=leledaidai-harbin-institute-of-technology
+# === End of environment variable configuration ===
+###########################################################################################
 
 export WANDB_MODE=offline
 

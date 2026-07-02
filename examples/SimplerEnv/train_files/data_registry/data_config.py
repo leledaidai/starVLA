@@ -193,4 +193,10 @@ DATASET_NAMED_MIXTURES = {
     "bridge_train_valid_cot":[
         ("bridge_orig_1.0.0_lerobot", 1.0, "oxe_bridge"),
     ],
+    "lime_bridge_filtered": [
+        ("bridge_orig_filtered", 1.0, "oxe_bridge"),
+    ],
+    "lime_bridge_filtered_v3_25_75": [
+        ("bridge_orig_filtered_v3_25-75", 1.0, "oxe_bridge"),
+    ],
 }

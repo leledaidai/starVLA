@@ -1,44 +1,39 @@
-run_id: qwencot_teacher_only_full
+run_id: latent_cot_decoder_off_codi
 run_root_dir: results/Checkpoints
 seed: 42
 trackers: [jsonl, wandb]
 wandb_entity: your_wandb_entity
-wandb_project: llavavla_teacher_only_full
+wandb_project: latent_vla_codi
 is_debug: false
 
 cot:
-  eval_mode: teacher
+  eval_mode: student
   enable_teacher_cot_loss: true
   enable_teacher_action_loss: true
-  enable_student_action_loss: false
+  enable_student_action_loss: true
   enable_decoder_loss: false
-  enable_cross_attn_distill_loss: false
+  enable_cross_attn_distill_loss: true
 
-  teacher_cot_loss_weight: 0.4
-  teacher_action_loss_weight: 1.0
-  student_action_loss_weight: 0.0
-  decoder_loss_weight: 0.0
+  teacher_cot_loss_weight: 0.2
+  teacher_action_loss_weight: 0.5
+  student_action_loss_weight: 1.0
+  decoder_loss_weight: 0.1
   cross_attn_distill_loss_weight: 0.2
 
-  latent_forward_use_cache: false
-  decode_cot_in_inference: false
-
+  distill_loss_type: smooth_l1
+  distill_loss_div_std: true
   max_cot_length: 550
   teacher_max_prompt_length: 750
   student_max_prompt_length: 230
-
+  latent_forward_use_cache: true
+  decode_cot_in_inference: false
   thinking_token: "<|thinking|>"
   start_thinking_token: "<|start_of_thinking|>"
   end_thinking_token: "<|end_of_thinking|>"
   fields:
-    - name: task
     - name: plan
-    - name: bboxes
-    - name: subtask_reason
     - name: subtask
-    - name: move_reason
     - name: move
-    - name: gripper
 
 framework:
   name: QwenGR00TImplicitCoT

@@ -12,15 +12,13 @@ cot:
   enable_teacher_action_loss: true
   enable_student_action_loss: true
   enable_decoder_loss: true
-  enable_slot_distill_loss: true
-  enable_pool_distill_loss: true
+  enable_cross_attn_distill_loss: true
+  cross_attn_distill_loss_weight: 1.0
 
   teacher_cot_loss_weight: 1.0
   teacher_action_loss_weight: 1.0
   student_action_loss_weight: 1.0
   decoder_loss_weight: 0.5
-  slot_distill_loss_weight: 1.0
-  pool_distill_loss_weight: 0.2
 
   distill_loss_type: smooth_l1
   distill_loss_div_std: true

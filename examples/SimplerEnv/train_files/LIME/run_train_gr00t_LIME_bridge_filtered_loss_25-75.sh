@@ -1,10 +1,9 @@
-
 #!/bin/bash
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../../../.." && pwd)"
 cd "${PROJECT_ROOT}"
 
 if command -v conda >/dev/null 2>&1; then
@@ -42,10 +41,10 @@ Framework_name=QwenGR00T
 freeze_module_list=''
 base_vlm=./playground/Pretrained_models/Qwen3-VL-4B-Instruct-Action
 config_yaml=./playground/Pretrained_models/Qwen3VL-GR00T-Bridge-RT-1/config.yaml
-oxe_data_root=/inspire/hdd/global_user/gongjingjing-25039/zhdai/datasets 
-data_mix=bridge_train_cot
-run_root_dir=./results/Checkpoints
-run_id=520_${data_mix}_qwen3GR00T_baseline
+oxe_data_root=/inspire/hdd/global_user/gongjingjing-25039/zyfu/datasets/LIME_bridge
+data_mix=lime_bridge_filtered_v3_25_75
+run_root_dir=/inspire/hdd/global_user/gongjingjing-25039/zyfu/model_ckpt/LIME
+run_id=LIME_starVLA_gr00t_bridge_filtered_loss_25-75
 wandb_project=latent_vla_51
 wandb_entity=leledaidai-harbin-institute-of-technology
 dataloader_num_workers=0
@@ -71,12 +70,15 @@ accelerate launch \
   --framework.qwenvl.base_vlm ${base_vlm} \
   --datasets.vla_data.data_root_dir ${oxe_data_root}\
   --datasets.vla_data.data_mix ${data_mix} \
+  --datasets.vla_data.skip_empty_language false \
+  --datasets.vla_data.delete_pause_frame false \
   --datasets.vla_data.per_device_batch_size 16 \
   --datasets.vla_data.num_workers ${dataloader_num_workers} \
   --datasets.vla_data.persistent_workers ${dataloader_persistent_workers} \
-  --trainer.freeze_modules ${freeze_module_list} \
+  --trainer.freeze_modules "${freeze_module_list}" \
   --trainer.max_train_steps 100000 \
-  --trainer.save_interval 5000 \
+  --trainer.save_interval 10000 \
+  --trainer.is_resume false \
   --trainer.logging_frequency 100 \
   --trainer.eval_interval 1000 \
   --run_root_dir ${run_root_dir} \

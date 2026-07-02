@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 set -e
@@ -42,10 +41,10 @@ Framework_name=QwenGR00T
 freeze_module_list=''
 base_vlm=./playground/Pretrained_models/Qwen3-VL-4B-Instruct-Action
 config_yaml=./playground/Pretrained_models/Qwen3VL-GR00T-Bridge-RT-1/config.yaml
-oxe_data_root=/inspire/hdd/global_user/gongjingjing-25039/zhdai/datasets 
+oxe_data_root=/inspire/hdd/global_user/gongjingjing-25039/zyfu/datasets/LIME_bridge
 data_mix=bridge_train_cot
-run_root_dir=./results/Checkpoints
-run_id=520_${data_mix}_qwen3GR00T_baseline
+run_root_dir=/inspire/hdd/global_user/gongjingjing-25039/zyfu/model_ckpt/LIME
+run_id=LIME_starVLA_gr00t_bridge_orig_starpip
 wandb_project=latent_vla_51
 wandb_entity=leledaidai-harbin-institute-of-technology
 dataloader_num_workers=0
@@ -74,9 +73,12 @@ accelerate launch \
   --datasets.vla_data.per_device_batch_size 16 \
   --datasets.vla_data.num_workers ${dataloader_num_workers} \
   --datasets.vla_data.persistent_workers ${dataloader_persistent_workers} \
-  --trainer.freeze_modules ${freeze_module_list} \
+  --datasets.vla_data.skip_empty_language true \
+  --datasets.vla_data.delete_pause_frame true \
+  --trainer.freeze_modules "${freeze_module_list}" \
   --trainer.max_train_steps 100000 \
-  --trainer.save_interval 5000 \
+  --trainer.save_interval 10000 \
+  --trainer.is_resume true \
   --trainer.logging_frequency 100 \
   --trainer.eval_interval 1000 \
   --run_root_dir ${run_root_dir} \

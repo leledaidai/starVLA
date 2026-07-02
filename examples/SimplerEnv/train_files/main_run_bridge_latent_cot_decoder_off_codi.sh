@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 set -e
@@ -19,88 +18,62 @@ else
 fi
 conda activate starVLA
 
-# export NCCL_SOCKET_IFNAME=bond0
-# export NCCL_IB_HCA=mlx5_2,mlx5_3
-
-# # used for check save when communication
-# export NCCL_BLOCKING_WAIT=1
-# export NCCL_ASYNC_ERROR_HANDLING=1
-# export NCCL_TIMEOUT=1000  # timeout set to 1 hour (unit: seconds)
-
-export NCCL_SOCKET_IFNAME=lo
-export NCCL_IB_DISABLE=1
-export NCCL_P2P_DISABLE=0
-
-export NCCL_DEBUG=WARN
+# NCCL 稳定性设置
+export NCCL_NVLS_ENABLE=0
+export TOKENIZERS_PARALLELISM=false
 export NCCL_BLOCKING_WAIT=1
 export NCCL_ASYNC_ERROR_HANDLING=1
-export NCCL_TIMEOUT=1800
 
 ###########################################################################################
 # === Please modify the following paths according to your environment ===
-Framework_name=QwenGR00T
+Framework_name=QwenGR00TImplicitCoT
 freeze_module_list=''
 base_vlm=./playground/Pretrained_models/Qwen3-VL-4B-Instruct-Action
-config_yaml=./playground/Pretrained_models/Qwen3VL-GR00T-Bridge-RT-1/config.yaml
-oxe_data_root=/inspire/hdd/global_user/gongjingjing-25039/zhdai/datasets 
+config_yaml=./starVLA/config/training/train_latent_vla/starvla_bridge_latent_cot_decoder_off_codi.yaml
+oxe_data_root=/inspire/hdd/global_user/gongjingjing-25039/zhdai/datasets
 data_mix=bridge_train_cot
-run_root_dir=./results/Checkpoints
-run_id=520_${data_mix}_qwen3GR00T_baseline
-wandb_project=latent_vla_51
-wandb_entity=leledaidai-harbin-institute-of-technology
+
+num_processes=8
+per_device_batch_size=16
+
 dataloader_num_workers=0
 dataloader_persistent_workers=false
+
+max_train_steps=100000
+save_interval=5000
+logging_frequency=100
+eval_interval=1000
+
+run_root_dir=./results/Checkpoints
+run_id=decoder_off_codi_new_${data_mix}_qwen3vl4b_bs16_fields_3
+wandb_project=latent_vla_51
+wandb_entity=leledaidai-harbin-institute-of-technology
 # === End of environment variable configuration ===
 ###########################################################################################
-
 
 export WANDB_MODE=offline
 
 output_dir=${run_root_dir}/${run_id}
 mkdir -p ${output_dir}
-# mv this script to the output dir
-cp $0 ${output_dir}/
-
+cp "$0" "${output_dir}/"
 
 accelerate launch \
   --config_file starVLA/config/deepseeds/deepspeed_zero2.yaml \
-  --num_processes 8 \
-  starVLA/training/train_starvla.py \
+  --num_processes ${num_processes} \
+  starVLA/training/cot_trainer.py \
   --config_yaml ${config_yaml} \
   --framework.name ${Framework_name} \
   --framework.qwenvl.base_vlm ${base_vlm} \
-  --datasets.vla_data.data_root_dir ${oxe_data_root}\
+  --datasets.vla_data.data_root_dir ${oxe_data_root} \
   --datasets.vla_data.data_mix ${data_mix} \
-  --datasets.vla_data.per_device_batch_size 16 \
+  --datasets.vla_data.per_device_batch_size ${per_device_batch_size} \
   --datasets.vla_data.num_workers ${dataloader_num_workers} \
   --datasets.vla_data.persistent_workers ${dataloader_persistent_workers} \
-  --trainer.freeze_modules ${freeze_module_list} \
-  --trainer.max_train_steps 100000 \
-  --trainer.save_interval 5000 \
-  --trainer.logging_frequency 100 \
-  --trainer.eval_interval 1000 \
+  --trainer.max_train_steps ${max_train_steps} \
+  --trainer.save_interval ${save_interval} \
+  --trainer.logging_frequency ${logging_frequency} \
+  --trainer.eval_interval ${eval_interval} \
   --run_root_dir ${run_root_dir} \
   --run_id ${run_id} \
   --wandb_project ${wandb_project} \
   --wandb_entity ${wandb_entity}
-  # --is_debug True
-
-
-
-##### Multi-Server Multi-GPU training script #####
-  # accelerate launch \
-  #   --config_file starVLA/config/deepseeds/deepspeed_zero2.yaml \
-  #   --main_process_ip $MASTER_ADDR \
-  #   --main_process_port $MASTER_PORT \
-  #   --machine_rank $SLURM_PROCID \
-  #   --num_machines $SLURM_NNODES \
-  #   --num_processes=${TOTAL_GPUS} \
-  #   starVLA/training/train_starvla.py \
-  #   --config_yaml ${config_yaml} \
-  #   --framework.name ${Framework_name} \
-  #   --framework.qwenvl.base_vlm ${base_vlm} \
-  #   --run_root_dir ${run_root_dir} \
-  #   --run_id ${run_id} \
-  #   --wandb_project your_project \
-  #   --wandb_entity your_name
-##### Multi-Server Multi-GPU training script #####
