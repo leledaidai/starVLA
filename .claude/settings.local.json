@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(echo \"exit: $?\")",
+      "Bash(python3 *)",
+      "Bash(dmesg)",
+      "Bash(python *)",
+      "Bash(sort -t' ' -k2 -n)",
+      "Bash(awk -F'  ' '{print $4}')",
+      "Bash(chmod +x *)"
+    ]
+  }
+}

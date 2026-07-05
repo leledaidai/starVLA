@@ -1,0 +1,14 @@
+python starVLA/inference/visualize_latent_attention.py       --checkpoint-path results/Checkpoints/72_try_latent_cot_distill_off_test_bridge_train_cot_qwen3vl4b_test_bs16_new_55_decoder_freeze_qwen3vl4b_text_512new       --step 40000       --trajectory-episode 6       --heatmap-dir results/attention/trajectory_heatmaps_40000_6       --output-file results/attention/trajectory_analysis_40000_6.txt
+
+python starVLA/inference/visualize_latent_attention.py       --checkpoint-path results/Checkpoints/72_try_latent_cot_distill_off_test_bridge_train_cot_qwen3vl4b_test_bs16_new_55_decoder_freeze_qwen3vl4b_text_512new       --step 40000       --trajectory-episode 10       --heatmap-dir results/attention/trajectory_heatmaps_40000_10       --output-file results/attention/trajectory_analysis_40000_10.txt
+
+python starVLA/inference/visualize_latent_attention.py       --checkpoint-path results/Checkpoints/72_try_latent_cot_distill_off_test_bridge_train_cot_qwen3vl4b_test_bs16_new_55_decoder_freeze_qwen3vl4b_text_512new       --step 40000       --trajectory-episode 100       --heatmap-dir results/attention/trajectory_heatmaps_40000_100       --output-file results/attention/trajectory_analysis_40000_100.txt
+
+python starVLA/inference/visualize_latent_attention.py       --checkpoint-path results/Checkpoints/72_try_latent_cot_distill_off_test_bridge_train_cot_qwen3vl4b_test_bs16_new_55_decoder_freeze_qwen3vl4b_text_512new       --step 30000       --trajectory-episode 100       --heatmap-dir results/attention/trajectory_heatmaps_30000_100       --output-file results/attention/trajectory_analysis_30000_100.txt
+
+python starVLA/inference/visualize_latent_attention.py       --checkpoint-path results/Checkpoints/72_try_latent_cot_distill_off_test_bridge_train_cot_qwen3vl4b_test_bs16_new_55_decoder_freeze_qwen3vl4b_text_512new       --step 20000       --trajectory-episode 100       --heatmap-dir results/attention/trajectory_heatmaps_20000_100       --output-file results/attention/trajectory_analysis_20000_100.txt
+
+
+python starVLA/inference/visualize_latent_attention.py       --checkpoint-path results/Checkpoints/72_try_latent_cot_distill_off_test_bridge_train_cot_qwen3vl4b_test_bs16_new_55_decoder_freeze_qwen3vl4b_text_512new       --step 5000       --trajectory-episode 100       --heatmap-dir results/attention/trajectory_heatmaps_5000_100       --output-file results/attention/trajectory_analysis_5000_100.txt
+
+python starVLA/inference/visualize_latent_attention.py       --checkpoint-path results/Checkpoints/72_try_latent_cot_distill_off_test_bridge_train_cot_qwen3vl4b_test_bs16_new_55_decoder_freeze_qwen3vl4b_text_512new       --step 40000       --trajectory-episode 102       --heatmap-dir results/attention/trajectory_heatmaps_40000_102       --output-file results/attention/trajectory_analysis_40000_102.txt
